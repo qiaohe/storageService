@@ -51,8 +51,12 @@ public class StorageServiceImpl implements StorageService {
         return gridFsTemplate.findOne(new Query(Criteria.where("_id").is(new ObjectId(id))));
     }
 
+    @Override
+    public GridFSDBFile getByFilename(String filename) {
+        return gridFsTemplate.findOne(new Query(Criteria.where("filename").is(filename)));
+    }
+
     public void delete(String filename) {
-        gridFsTemplate.delete(null);
         gridFsTemplate.delete(new Query(Criteria.where("filename").is(filename)));
     }
 

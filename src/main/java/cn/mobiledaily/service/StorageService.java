@@ -25,6 +25,8 @@ public interface StorageService {
 
     GridFSDBFile get(String id);
 
+    GridFSDBFile getByFilename(String filename);
+
     void delete(String filename);
 
     void clean();
