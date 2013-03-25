@@ -19,14 +19,14 @@ import javax.servlet.ServletRegistration;
 public class StorageWebApplicationInitializer implements WebApplicationInitializer {
     @java.lang.Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(AppConfig.class);
+        context.register(WebConfig.class);
         AnnotationConfigWebApplicationContext root = new AnnotationConfigWebApplicationContext();
         root.scan("cn.mobiledaily.config");
         servletContext.addListener(new ContextLoaderListener(root));
         ServletRegistration.Dynamic appServlet = servletContext.addServlet("appServlet", new DispatcherServlet(root));
         appServlet.setLoadOnStartup(1);
-        appServlet.addMapping("/");
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(AppConfig.class);
-        context.register(WebConfig.class);
+        appServlet.addMapping("/cupdata/*");
     }
 }

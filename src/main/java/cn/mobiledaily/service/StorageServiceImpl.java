@@ -1,15 +1,20 @@
 package cn.mobiledaily.service;
 
+import cn.mobiledaily.config.AppConfig;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFSDBFile;
+import net.coobird.thumbnailator.Thumbnails;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +27,8 @@ public class StorageServiceImpl implements StorageService {
     public List<String> getFileNames() {
         List<String> result = new ArrayList<>();
         for (GridFSDBFile file : gridFsTemplate.find(null)) {
-            result.add(file.getFilename());
+//            if (file.getFilename().startsWith("T"))
+                result.add(file.getFilename());
         }
         return result;
     }
@@ -38,7 +44,17 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String save(InputStream inputStream, String filename, String contentType) {
-        return gridFsTemplate.store(inputStream, contentType, filename).getFilename();
+        BufferedInputStream buffer = new BufferedInputStream(inputStream);
+        buffer.mark(Integer.MAX_VALUE);
+        try {
+            File f = new File(filename);
+            Thumbnails.of(buffer).size(200, 200).toFile(f);
+            gridFsTemplate.store(new FileInputStream(f), "T" + filename, contentType);
+            buffer.reset();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return gridFsTemplate.store(buffer, filename, contentType).getFilename();
     }
 
     @Override
@@ -63,5 +79,17 @@ public class StorageServiceImpl implements StorageService {
     @Override
     public void clean() {
         gridFsTemplate.delete(null);
+    }
+
+    public static void main(String[] args) throws IOException {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        StorageService service = ctx.getBean("storageService", StorageService.class);
+        service.clean();
+//        for (int i = 0; i < 20; i++) {
+//            InputStream is = new FileInputStream(new File("/Users/Johnson/Downloads/card.jpeg"));
+//
+//            service.save(is, "3101091878102100" + i + ".jpeg", ".jpeg");
+//            is.close();
+//        }
     }
 }

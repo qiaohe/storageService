@@ -8,15 +8,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,6 +28,13 @@ import java.net.URI;
 public class StorageController {
     @Autowired
     private StorageService storageService;
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @ResponseBody
+    public List<String> getAllFiles() {
+        return storageService.getFileNames();
+    }
+
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
     public void getById(@PathVariable(value = "id") String id, HttpServletResponse response) throws IOException {
@@ -53,17 +58,27 @@ public class StorageController {
         }
     }
 
+//    @RequestMapping(value = "/store", method = RequestMethod.POST)
+//    public ResponseEntity<String> store(@RequestParam MultipartFile file) {
+//        try {
+//            String storedId = storageService.save(file.getInputStream(), file.getContentType(), file.getOriginalFilename());
+//            String storedURL = "/storage/id/" + storedId;
+//            HttpHeaders responseHeaders = new HttpHeaders();
+//            responseHeaders.setLocation(new URI(storedURL));
+//            return new ResponseEntity<String>(storedURL, responseHeaders, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return new ResponseEntity<String>(e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
     @RequestMapping(value = "/store", method = RequestMethod.POST)
-    public ResponseEntity<String> store(@RequestParam MultipartFile file) {
+    public String store(@RequestParam MultipartFile file) {
         try {
-            String storedId = storageService.save(file.getInputStream(), file.getContentType(), file.getOriginalFilename());
-            String storedURL = "/storage/id/" + storedId;
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.setLocation(new URI(storedURL));
-            return new ResponseEntity<String>(storedURL, responseHeaders, HttpStatus.OK);
+            String storedId = storageService.save(file.getInputStream(),file.getOriginalFilename(), file.getContentType());
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+//            return new ResponseEntity<String>(e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return "main";
     }
 }
 
